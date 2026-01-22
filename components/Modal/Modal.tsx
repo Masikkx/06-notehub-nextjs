@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import css from "./Modal.module.css";
+import {createPortal} from "react-dom";
 
 interface ModalProps {
   children: React.ReactNode;
@@ -15,27 +16,30 @@ export default function Modal({ children, onClose }: ModalProps) {
         onClose();
       }
     };
-
-     document.body.style.overflow = "hidden";
+     
+    const originalOverflow=document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow=originalOverflow;
     };
   }, [onClose]);
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  return (
+  return createPortal(
     <div 
     className={css.backdrop} onClick={handleBackdropClick}>
       <div className={css.modal}>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
